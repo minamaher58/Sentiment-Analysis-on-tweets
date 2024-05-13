@@ -1,20 +1,21 @@
 import re
 import string
-import numpy as np
 
 from nltk.corpus import stopwords
 from nltk.stem import PorterStemmer
 from nltk.tokenize import TweetTokenizer
 
+import numpy as np
+
 
 def process_tweet(tweet):
-    """Process tweet function.
+    '''
     Input:
         tweet: a string containing a tweet
     Output:
         tweets_clean: a list of words containing the processed tweet
 
-    """
+    '''
     stemmer = PorterStemmer()
     stopwords_english = stopwords.words('english')
     # remove stock market tickers like $GE
@@ -23,6 +24,7 @@ def process_tweet(tweet):
     tweet = re.sub(r'^RT[\s]+', '', tweet)
     # remove hyperlinks
     tweet = re.sub(r'https?:\/\/.*[\r\n]*', '', tweet)
+    # remove hashtags
     # only removing the hash # sign from the word
     tweet = re.sub(r'#', '', tweet)
     # tokenize tweets
@@ -33,34 +35,26 @@ def process_tweet(tweet):
     tweets_clean = []
     for word in tweet_tokens:
         if (word not in stopwords_english and  # remove stopwords
-                word not in string.punctuation):  # remove punctuation
+            word not in string.punctuation):  # remove punctuation
             # tweets_clean.append(word)
             stem_word = stemmer.stem(word)  # stemming word
             tweets_clean.append(stem_word)
 
     return tweets_clean
 
-
-def build_freqs(tweets, ys):
-    """Build frequencies.
+def lookup(freqs, word, label):
+    '''
     Input:
-        tweets: a list of tweets
-        ys: an m x 1 array with the sentiment label of each tweet
-            (either 0 or 1)
+        freqs: a dictionary with the frequency of each pair (or tuple)
+        word: the word to look up
+        label: the label corresponding to the word
     Output:
-        freqs: a dictionary mapping each (word, sentiment) pair to its
-        frequency
-    """
+        n: the number of times the word with its corresponding label appears.
+    '''
+    n = 0  # freqs.get((word, label), 0)
 
-    yslist = np.squeeze(ys).tolist()
+    pair = (word, label)
+    if (pair in freqs):
+        n = freqs[pair]
 
-    freqs = {}
-    for y, tweet in zip(yslist, tweets):
-        for word in process_tweet(tweet):
-            pair = (word, y)
-            if pair in freqs:
-                freqs[pair] += 1
-            else:
-                freqs[pair] = 1
-
-    return freqs
+    return n
